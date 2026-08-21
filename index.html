@@ -3,59 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CCE Papers Index</title>
+    <title>Exam Portal - CCE Model Papers</title>
+    <!-- Google Fonts for a professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-            line-height: 1.6;
-            color: #24292e;
-        }
-        h1 {
-            border-bottom: 1px solid #eaecef;
-            padding-bottom: 10px;
-        }
-        ul {
-            list-style-type: none;
+        /* Base Styles */
+        * {
+            margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
-        li {
-            margin: 15px 0;
-            padding: 10px;
-            border: 1px solid #e1e4e8;
-            border-radius: 6px;
-            background-color: #f6f8fa;
+        body {
+            background-color: #f4f7f6;
+            color: #2c3e50;
         }
-        a {
-            text-decoration: none;
-            color: #0366d6;
+
+        /* Navbar */
+        nav {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        nav .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        nav .logo i {
+            color: #1abc9c;
+            margin-right: 10px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1abc9c, #3498db);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 40px;
+        }
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .hero p {
             font-size: 18px;
-            font-weight: 600;
-            display: block;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
         }
-        a:hover {
-            text-decoration: underline;
+
+        /* Container for Cards */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px 20px;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            border-left: 5px solid #1abc9c;
+            padding-left: 15px;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        /* Paper Card Styles */
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #eaeaea;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        .card-header {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        .card-header h3 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .badge {
+            display: inline-block;
+            background-color: #1abc9c;
+            color: white;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .card-body {
+            padding: 25px 20px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 15px;
+        }
+        .info-row i {
+            color: #3498db;
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Start Button */
+        .btn-start {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-start:hover {
+            background-color: #2980b9;
+            color: white;
+        }
+        .btn-start i {
+            margin-left: 8px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            margin-top: auto;
         }
     </style>
 </head>
 <body>
 
-    <h1>CCE Papers Directory</h1>
-    <p>Select a paper to view from the list below:</p>
+    <nav>
+        <div class="logo"><i class="fa-solid fa-graduation-cap"></i> Mock Test Portal</div>
+        <div><strong>Welcome, Student</strong></div>
+    </nav>
 
-    <ul>
-        <!-- Link to the existing HTML file in your root directory -->
-        <li><a href="CCE_Paper_1.html">Paper 1 (HTML View)</a></li>
+    <header class="hero">
+        <h1>CCE Preparation Hub</h1>
+        <p>Give tests, analyze your performance, and prepare for your exams with our strictly timed, interactive model papers.</p>
+    </header>
+
+    <div class="container">
+        <h2 class="section-title">Available Mock Tests</h2>
         
-        <!-- Link to the Paper 1 folder -->
-        <li><a href="Paper 1/">Paper 1 (Folder Contents)</a></li>
-        
-        <!-- Placeholders for future papers. Create the files first, then update these links -->
-        <li><a href="Paper_2.html">Paper 2</a></li>
-        <li><a href="Paper_3.html">Paper 3</a></li>
-    </ul>
+        <div class="grid">
+            
+            <!-- CARD 1 -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>CCE Model Paper - 1</h3>
+                    <span class="badge">Gujarati Medium</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span><i class="fa-solid fa-list-ol"></i> Total Questions:</span>
+                        <strong>100</strong>
+                    </div>
+                    <div class="info-row">
+                        <span><i class="fa-regular fa-clock"></i> Time Limit:</span>
+                        <strong>120 Mins</strong>
+                    </div>
+                    <!-- Directing to Folder: "Paper 1" File: "CCE_Paper_1.html" -->
+                    <a href="Paper 1/CCE_Paper_1.html" class="btn-start" target="_blank">
+                        Start Test <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- You can copy-paste more cards here for Paper 4, 5, etc. -->
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Exam Portal. Built for practice and success.</p>
+    </footer>
 
 </body>
 </html>
