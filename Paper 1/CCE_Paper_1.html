@@ -140,157 +140,7 @@
     <div id="quiz-container">
         <div class="header">CCE Model Paper - 1 (Gujarati Medium)</div>
 
-        <!-- ========================================== -->
-        <!-- PASTE ALL 100 QUESTION CARDS HERE          -->
-        <!-- (Questions 1 to 100 go right here)         -->
-        <!-- ========================================== -->
         
-    </div>
-    
-    <!-- JavaScript Logic -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // --- UI ELEMENTS ---
-            const startScreen = document.getElementById('start-screen');
-            const topBar = document.getElementById('top-bar');
-            const quizContainer = document.getElementById('quiz-container');
-            const btnStartExam = document.getElementById('btn-start-exam');
-
-            // --- SCOREBOARD LOGIC ---
-            let score = 0;
-            const questionCards = document.querySelectorAll('.question-card');
-            
-            // Count only valid questions (those with a correct answer mapped)
-            const validQuestions = Array.from(questionCards).filter(card => card.querySelector('.option[data-correct="true"]'));
-            document.getElementById('total-questions').innerText = validQuestions.length;
-
-            questionCards.forEach(card => {
-                const options = card.querySelectorAll('.option');
-                options.forEach(option => {
-                    option.addEventListener('click', function() {
-                        if (card.classList.contains('answered') || isPaused) return; // Prevent answering if paused
-                        
-                        const correctOption = card.querySelector('.option[data-correct="true"]');
-                        if (!correctOption) return;
-
-                        card.classList.add('answered');
-                        const isCorrect = this.getAttribute('data-correct') === 'true';
-
-                        if (isCorrect) {
-                            this.classList.add('correct');
-                            score++;
-                            document.getElementById('current-score').innerText = score;
-                        } else {
-                            this.classList.add('wrong');
-                            correctOption.classList.add('correct');
-                        }
-                    });
-                });
-            });
-
-            // --- TIMER LOGIC (120 Minutes) ---
-            let totalSeconds = 120 * 60; // 120 minutes
-            let timerInterval = null;
-            let isPaused = false;
-            
-            const timeDisplay = document.getElementById('time-display');
-            const btnPauseResume = document.getElementById('btn-pause-resume');
-            const btnRestart = document.getElementById('btn-restart');
-
-            function formatTime(seconds) {
-                let m = Math.floor(seconds / 60);
-                let s = seconds % 60;
-                return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
-            }
-
-            function updateTimerDisplay() {
-                timeDisplay.innerText = formatTime(totalSeconds);
-            }
-
-            function startTimer() {
-                if (!timerInterval) {
-                    timerInterval = setInterval(() => {
-                        if (totalSeconds > 0) {
-                            totalSeconds--;
-                            updateTimerDisplay();
-                        } else {
-                            clearInterval(timerInterval);
-                            timerInterval = null;
-                            alert("Time is up! Please submit your test.");
-                        }
-                    }, 1000);
-                }
-            }
-
-            function togglePauseResume() {
-                if (isPaused) {
-                    // Resume
-                    startTimer();
-                    isPaused = false;
-                    btnPauseResume.innerText = "Pause";
-                    btnPauseResume.style.backgroundColor = "#f39c12"; // Orange
-                    quizContainer.style.opacity = "1"; // Show questions normally
-                    quizContainer.style.pointerEvents = "auto";
-                } else {
-                    // Pause
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    isPaused = true;
-                    btnPauseResume.innerText = "Resume";
-                    btnPauseResume.style.backgroundColor = "#27ae60"; // Green
-                    quizContainer.style.opacity = "0.2"; // Blur out questions while paused
-                    quizContainer.style.pointerEvents = "none";
-                }
-            }
-
-            function restartTimer() {
-                if(confirm("Are you sure you want to restart the timer and clear your score?")) {
-                    // Reset Timer
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    totalSeconds = 120 * 60;
-                    isPaused = false;
-                    btnPauseResume.innerText = "Pause";
-                    btnPauseResume.style.backgroundColor = "#f39c12";
-                    quizContainer.style.opacity = "1";
-                    quizContainer.style.pointerEvents = "auto";
-                    updateTimerDisplay();
-                    startTimer();
-
-                    // Reset Score and Questions
-                    score = 0;
-                    document.getElementById('current-score').innerText = score;
-                    questionCards.forEach(card => {
-                        card.classList.remove('answered');
-                        const options = card.querySelectorAll('.option');
-                        options.forEach(opt => {
-                            opt.classList.remove('correct', 'wrong');
-                        });
-                    });
-                    
-                    // Scroll to top
-                    window.scrollTo(0, 0);
-                }
-            }
-
-            // --- EVENT LISTENERS ---
-            
-            // Start Button Logic
-            btnStartExam.addEventListener('click', () => {
-                startScreen.style.display = 'none';
-                topBar.style.display = 'flex';
-                quizContainer.style.display = 'block';
-                updateTimerDisplay();
-                startTimer();
-            });
-
-            btnPauseResume.addEventListener('click', togglePauseResume);
-            btnRestart.addEventListener('click', restartTimer);
-        });
-    </script>
-</body>
-</html>
-
     <!-- પ્રશ્ન ૧ -->
     <div class="question-card">
         <div class="q-num">Que: 1</div>
@@ -823,7 +673,7 @@
         </div>
     </div>
 
-    <!-- પ્રશ્ન ૩૯ -->!!!
+    <!-- પ્રશ્ન ૩૯ -->
     <div class="question-card">
         <div class="q-num">Que: 39</div>
         <div class="q-text">નીચેના પ્રશ્નમાં, આપેલ વિકલ્પોમાંથી પ્રશ્ન ચિહ્ન (?) ના સ્થાને મૂકી શકાય તેવી આકૃતિ પસંદ કરો.<br> <img src='image/page51_img0.png'> </div>
@@ -1575,6 +1425,151 @@
             <div class="option"><strong>C.</strong> Gandhis have been owners of the shops</div>
             <div class="option"><strong>D.</strong> All Gandhis are businessmen</div>
     </div>
+        
+    </div>
+    
+    <!-- JavaScript Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- UI ELEMENTS ---
+            const startScreen = document.getElementById('start-screen');
+            const topBar = document.getElementById('top-bar');
+            const quizContainer = document.getElementById('quiz-container');
+            const btnStartExam = document.getElementById('btn-start-exam');
+
+            // --- SCOREBOARD LOGIC ---
+            let score = 0;
+            const questionCards = document.querySelectorAll('.question-card');
+            
+            // Count only valid questions (those with a correct answer mapped)
+            const validQuestions = Array.from(questionCards).filter(card => card.querySelector('.option[data-correct="true"]'));
+            document.getElementById('total-questions').innerText = validQuestions.length;
+
+            questionCards.forEach(card => {
+                const options = card.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        if (card.classList.contains('answered') || isPaused) return; // Prevent answering if paused
+                        
+                        const correctOption = card.querySelector('.option[data-correct="true"]');
+                        if (!correctOption) return;
+
+                        card.classList.add('answered');
+                        const isCorrect = this.getAttribute('data-correct') === 'true';
+
+                        if (isCorrect) {
+                            this.classList.add('correct');
+                            score++;
+                            document.getElementById('current-score').innerText = score;
+                        } else {
+                            this.classList.add('wrong');
+                            correctOption.classList.add('correct');
+                        }
+                    });
+                });
+            });
+
+            // --- TIMER LOGIC (120 Minutes) ---
+            let totalSeconds = 120 * 60; // 120 minutes
+            let timerInterval = null;
+            let isPaused = false;
+            
+            const timeDisplay = document.getElementById('time-display');
+            const btnPauseResume = document.getElementById('btn-pause-resume');
+            const btnRestart = document.getElementById('btn-restart');
+
+            function formatTime(seconds) {
+                let m = Math.floor(seconds / 60);
+                let s = seconds % 60;
+                return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+            }
+
+            function updateTimerDisplay() {
+                timeDisplay.innerText = formatTime(totalSeconds);
+            }
+
+            function startTimer() {
+                if (!timerInterval) {
+                    timerInterval = setInterval(() => {
+                        if (totalSeconds > 0) {
+                            totalSeconds--;
+                            updateTimerDisplay();
+                        } else {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            alert("Time is up! Please submit your test.");
+                        }
+                    }, 1000);
+                }
+            }
+
+            function togglePauseResume() {
+                if (isPaused) {
+                    // Resume
+                    startTimer();
+                    isPaused = false;
+                    btnPauseResume.innerText = "Pause";
+                    btnPauseResume.style.backgroundColor = "#f39c12"; // Orange
+                    quizContainer.style.opacity = "1"; // Show questions normally
+                    quizContainer.style.pointerEvents = "auto";
+                } else {
+                    // Pause
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isPaused = true;
+                    btnPauseResume.innerText = "Resume";
+                    btnPauseResume.style.backgroundColor = "#27ae60"; // Green
+                    quizContainer.style.opacity = "0.2"; // Blur out questions while paused
+                    quizContainer.style.pointerEvents = "none";
+                }
+            }
+
+            function restartTimer() {
+                if(confirm("Are you sure you want to restart the timer and clear your score?")) {
+                    // Reset Timer
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    totalSeconds = 120 * 60;
+                    isPaused = false;
+                    btnPauseResume.innerText = "Pause";
+                    btnPauseResume.style.backgroundColor = "#f39c12";
+                    quizContainer.style.opacity = "1";
+                    quizContainer.style.pointerEvents = "auto";
+                    updateTimerDisplay();
+                    startTimer();
+
+                    // Reset Score and Questions
+                    score = 0;
+                    document.getElementById('current-score').innerText = score;
+                    questionCards.forEach(card => {
+                        card.classList.remove('answered');
+                        const options = card.querySelectorAll('.option');
+                        options.forEach(opt => {
+                            opt.classList.remove('correct', 'wrong');
+                        });
+                    });
+                    
+                    // Scroll to top
+                    window.scrollTo(0, 0);
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            
+            // Start Button Logic
+            btnStartExam.addEventListener('click', () => {
+                startScreen.style.display = 'none';
+                topBar.style.display = 'flex';
+                quizContainer.style.display = 'block';
+                updateTimerDisplay();
+                startTimer();
+            });
+
+            btnPauseResume.addEventListener('click', togglePauseResume);
+            btnRestart.addEventListener('click', restartTimer);
+        });
+    </script>
+
 
     <!-- JavaScript Logic for Click, Reveal, Score, and Timer -->
     <script>
