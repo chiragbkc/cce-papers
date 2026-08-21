@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <title>CCE Model Paper</title>
+    <!-- KaTeX for rendering math formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" 
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ]
+        });"></script>
+    <style>
+        @page { size: A4; margin: 15mm; background-color: #f4f7f6; }
+        
+        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #2c3e50; margin: 0; padding: 0; line-height: 1.5; background-color: #f4f7f6; }
+        
+        /* Start Screen Styles */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            background-color: white;
+        }
+        
+        #start-screen h1 { font-size: 32pt; color: #1abc9c; margin-bottom: 10px; }
+        #start-screen p { font-size: 16pt; color: #34495e; margin-bottom: 30px; }
+        
+        #btn-start-exam {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18pt;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        #btn-start-exam:hover { background-color: #2980b9; transform: translateY(-2px); }
+
+        /* Fixed Top Bar (Hidden Initially) */
+        #top-bar {
+            display: none; /* Hidden until start */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 30px;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        #score-board { font-size: 16pt; font-weight: bold; }
+        
+        /* Timer Styles */
+        #timer-container { display: flex; align-items: center; gap: 15px; font-size: 16pt; font-weight: bold; }
+        .timer-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12pt;
+            transition: 0.2s;
+        }
+        .timer-btn:hover { opacity: 0.8; }
+        #btn-pause-resume { background-color: #f39c12; color: white; }
+        #btn-restart { background-color: #e74c3c; color: white; }
+
+        /* Quiz Container (Hidden Initially) */
+        #quiz-container { display: none; padding-top: 80px; } /* padding-top prevents top-bar overlap */
+
+        .header { background-color: #1abc9c; color: white; padding: 25px; text-align: center; font-size: 26pt; font-weight: bold; border-radius: 8px; margin: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .question-card { background: white; padding: 18px; margin: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-left: 6px solid #3498db; page-break-inside: avoid; transition: all 0.3s ease; }
+        .q-num { font-size: 14pt; font-weight: bold; color: #e74c3c; margin-bottom: 8px; }
+        .q-text { font-size: 13pt; font-weight: 600; margin-bottom: 12px; color: #2c3e50; }
+        
+        .options { display: flex; flex-wrap: wrap; font-size: 12pt; color: #34495e; justify-content: space-between; }
+        
+        .option { 
+            width: 48%; 
+            margin-bottom: 10px; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #f9f9f9;
+        }
+        
+        .option:hover { background-color: #e2e8f0; border-color: #cbd5e1; }
+        .option.correct { background-color: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; }
+        .option.wrong { background-color: #e74c3c !important; color: white !important; border-color: #c0392b !important; }
+        .question-card.answered .option { pointer-events: none; }
+
+        .ans-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; }
+        .ans-table th, .ans-table td { border: 1px solid #bdc3c7; padding: 10px; text-align: center; font-size: 12pt; }
+        .ans-table th { background-color: #ecf0f1; color: #2c3e50; font-weight: bold; }
+        .ans-table tr:nth-child(even) { background-color: #f9f9f9; }
+        .passage-box { margin-bottom: 15px; padding: 15px; background: #ecf0f1; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1>CCE Model Paper - 2</h1>
+        <p><strong>Total Time:</strong> 120 Minutes | <strong>Total Questions:</strong> 100</p>
+        <button id="btn-start-exam">Start Exam</button>
+    </div>
+
+    <!-- Fixed Top Bar (Score & Timer) -->
+    <div id="top-bar">
+        <div id="score-board">
+            Score: <span id="current-score">0</span> / <span id="total-questions">0</span>
+        </div>
+        <div id="timer-container">
+            Time Left: <span id="time-display">120:00</span>
+            <button id="btn-pause-resume" class="timer-btn">Pause</button>
+            <button id="btn-restart" class="timer-btn">Restart</button>
+        </div>
+    </div>
+
+    <!-- Main Quiz Container -->
+    <div id="quiz-container">
+        <div class="header">CCE Model Paper - 2 (Gujarati Medium)</div>
+
+        <!-- પ્રશ્ન ૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 1</div>
+        <div class="q-text">જો 'A' નો અર્થ ' ગુણાકાર', 'B' નો અર્થ 'સરવાળો', 'C' નો અર્થ 'બાદબાકી' અને 'D' નો અર્થ "ભાગાકાર" હોય, તો નીચેની પદાવલીનું મૂલ્ય શું હશે?</div>
+        <div class="q-text">$$6\text{A}6\text{C}3\text{B}38\text{D}2=?$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 40</div>
+            <div class="option"><strong>B.</strong> 51</div>
+            <div class="option"><strong>C.</strong> 52</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 39</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 2</div>
+        <div class="q-text">જો 'M' એ '$\times$' સૂચવે છે, 'D' એ '$+$' સૂચવે છે, 'A' એ '$+$' સૂચવે છે, 'S' એ '$-$' સૂચવે છે, તો પછી નીચેની પદાવલિનું મૂલ્ય શું થશે?</div>
+        <div class="q-text">$$4\text{S}8\text{D}2\text{A}12\text{M}2$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 20</div>
+            <div class="option"><strong>B.</strong> 24</div>
+            <div class="option" data-correct="true"><strong>C.</strong> 34</div>
+            <div class="option"><strong>D.</strong> 36</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 3</div>
+        <div class="q-text">જો 'A' નો અર્થ ' ગુણાકાર', 'B' નો અર્થ 'સરવાળો', 'C' નો અર્થ 'બાદબાકી' અને 'D' નો અર્થ "ભાગાકાર" હોય, તો નીચેની પદાવલીનું મૂલ્ય શું હશે?</div>
+        <div class="q-text">$$3\text{A}8\text{C}8\text{B}55\text{D}5=?$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 27</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 31</div>
+            <div class="option"><strong>C.</strong> 37</div>
+            <div class="option"><strong>D.</strong> 41</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 4</div>
+        <div class="q-text">જો '\$' નો અર્થ '$-$', '*' નો અર્થ '$+$', '@' નો અર્થ '$+$', '#' નો અર્થ ‘$\times$' થાય, તો નીચેની પદાવલીનું મૂલ્ય શું હશે?</div>
+        <div class="q-text">$$7\#3*42@6\$9=?$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 14</div>
+            <div class="option"><strong>B.</strong> 19</div>
+            <div class="option" data-correct="true"><strong>C.</strong> 22</div>
+            <div class="option"><strong>D.</strong> 26</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 5</div>
+        <div class="q-text">જો P = '$+$', Q = '$-$', R = '$\times$' અને S = '$\div$' હોય, તો નીચેની પદાવલીનું મૂલ્ય શું હશે?</div>
+        <div class="q-text">$$16\text{ R }2\text{ Q }20\text{ P }15\text{ S }3$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 14</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 15</div>
+            <div class="option"><strong>C.</strong> 16</div>
+            <div class="option"><strong>D.</strong> 17</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 6</div>
+        <div class="q-text">નીચેના પ્રશ્નમાં 'પ્રશ્ન' અને તેની નીચે 1 અને 2 નંબરમાં દર્શાવેલા બે વિધાનોનો સમાવેશ થાય છે. ઉમેદવારોએ એ નક્કી કરવાનું છે કે વિધાનોમાં આપવામાં આવેલી માહિતી પ્રશ્નનો જવાબ આપવા માટે પર્યાપ્ત છે કે કેમ.</div>
+        <div class="q-text"><strong>પ્રશ્ન:</strong> દિલ્હી અને અજમેર વચ્ચે સૌથી ટૂંકા માર્ગે કેટલું અંતર છે?</div>
+        <div class="q-text"><strong>વિધાનો:</strong><br>1. અજમેર મથુરાની ઉત્તરે 16 km છે જે મુંબઈથી 55 km દૂર છે.<br>2. આગ્રા બિકાનેરથી 63 km દૂર છે જે અજમેરથી 50 km દૂર છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> વિધાન 1 એકલું પર્યાપ્ત છે જ્યારે વિધાન 2 એકલું પર્યાપ્ત નથી</div>
+            <div class="option" data-correct="true"><strong>B.</strong> ન તો વિધાન 1 કે ન તો વિધાન 2 પર્યાપ્ત છે</div>
+            <div class="option"><strong>C.</strong> વિધાન 1 અને વિધાન 2 બંને પર્યાપ્ત છે</div>
+            <div class="option"><strong>D.</strong> વિધાન 2 એકલું પર્યાપ્ત છે જ્યારે વિધાન 1 એકલું પર્યાપ્ત નથી</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 7</div>
+        <div class="q-text">નીચેના પ્રશ્નમાં 'પ્રશ્ન' અને તેની નીચે 1 અને 2 નંબરમાં દર્શાવેલા બે વિધાનોનો સમાવેશ થાય છે. ઉમેદવારોએ એ નક્કી કરવાનું છે કે વિધાનોમાં આપવામાં આવેલી માહિતી પ્રશ્નનો જવાબ આપવા માટે પર્યાપ્ત છે કે કેમ.</div>
+        <div class="q-text"><strong>પ્રશ્ન:</strong> 30 છોકરીઓની હરોળમાં પ્રિયા અને કાવ્યા વચ્ચે કેટલી છોકરીઓ છે?</div>
+        <div class="q-text"><strong>વિધાનો:</strong><br>1. પ્રિયા એ રાહુલથી 16 સ્થાન દૂર છે.<br>2. પ્રિયા એ ડાબા છેડેથી 12મા ક્રમે છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> વિધાન 1 એકલું પર્યાપ્ત છે જ્યારે વિધાન 2 એકલું પર્યાપ્ત નથી</div>
+            <div class="option"><strong>B.</strong> વિધાન 2 એકલું પર્યાપ્ત છે જ્યારે વિધાન 1 એકલું પર્યાપ્ત નથી</div>
+            <div class="option"><strong>C.</strong> વિધાન 1 અને વિધાન 2 બંને પર્યાપ્ત છે</div>
+            <div class="option" data-correct="true"><strong>D.</strong> ન તો વિધાન 1 કે ન તો વિધાન 2 પર્યાપ્ત છે</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 8</div>
+        <div class="q-text">માત્ર અવિભાજ્ય સંખ્યાઓ અને તેમના ક્રમના આધારે નીચેનામાંથી કઈ જોડી નીચે આપેલી પ્રસ્તુતિને સમાન છે?</div>
+        <div class="q-text">$$181 : 191$$</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 109 : 113</div>
+            <div class="option"><strong>B.</strong> 215 : 264</div>
+            <div class="option"><strong>C.</strong> 117 : 184</div>
+            <div class="option"><strong>D.</strong> 111 : 120</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 9</div>
+        <div class="q-text">નીચેનામાંથી કઈ જોડી ફક્ત ભાગાકાર પદ્ધતિના આધારે નીચે આપેલ પ્રસ્તુતિને સમાન છે?</div>
+        <div class="q-text">$$36 : 722$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 22 : 422</div>
+            <div class="option"><strong>B.</strong> 12 : 262</div>
+            <div class="option" data-correct="true"><strong>C.</strong> 44 : 883</div>
+            <div class="option"><strong>D.</strong> 43 : 862</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 10</div>
+        <div class="q-text">નીચેનામાંથી કઈ જોડી ફક્ત આગલી અવિભાજ્ય સંખ્યા પદ્ધતિ દ્વારા ગુણાકાર કરેલ સંખ્યાના આધારે નીચે આપેલ પદાવલીને સમાન છે?</div>
+        <div class="q-text">$$20 : 460$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 10 : 120</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 14 : 238</div>
+            <div class="option"><strong>C.</strong> 19 : 398</div>
+            <div class="option"><strong>D.</strong> 15 : 258</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 11</div>
+        <div class="q-text">ફક્ત સંખ્યાઓના સરવાળા અને બાદબાકી પદ્ધતિના આધારે નીચે આપેલી પ્રસ્તુતિને સમાન છે?</div>
+        <div class="q-text">$$998 : 25$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 279 : 15</div>
+            <div class="option"><strong>B.</strong> 319 : 16</div>
+            <div class="option" data-correct="true"><strong>C.</strong> 846 : 17</div>
+            <div class="option"><strong>D.</strong> 868 : 20</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 12</div>
+        <div class="q-text">નીચેનામાંથી કઈ જોડી નીચે આપેલી પ્રસ્તુતિને સમાન છે?</div>
+        <div class="q-text">$$743 : 347$$</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 326 : 623</div>
+            <div class="option"><strong>B.</strong> 273 : 327</div>
+            <div class="option"><strong>C.</strong> 418 : 418</div>
+            <div class="option"><strong>D.</strong> 176 : 761</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 13</div>
+        <div class="q-text">નીચેનામાંથી કઈ જોડી ફક્ત સંખ્યાઓના સરવાળાના આધારે નીચે આપેલી પ્રસ્તુતિને સમાન છે?</div>
+        <div class="q-text">$$586 : 19$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 439 : 18</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 794 : 20</div>
+            <div class="option"><strong>C.</strong> 743 : 17</div>
+            <div class="option"><strong>D.</strong> 648 : 19</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 14</div>
+        <div class="q-text">નીચેનું કોષ્ટક એક પરીક્ષામાં છ વિદ્યાર્થીઓએ છ જુદા જુદા વિષયોમાં મેળવેલા ગુણની ટકાવારી આપે છે. કૌંસમાં આપવામાં આવેલા નંબરો દરેક વિષયમાં મહત્તમ ગુણ આપે છે.</div>
+        <table class="ans-table">
+            <tr>
+                <th>વિદ્યાર્થી</th>
+                <th>જનરલ નોલેજ (100)</th>
+                <th>પ્રાચીન ઈતિહાસ (100)</th>
+                <th>મધ્યયુગીન ઈતિહાસ (100)</th>
+                <th>આધુનિક ઈતિહાસ (100)</th>
+                <th>પર્યાવરણ (100)</th>
+                <th>હિન્દી (100)</th>
+            </tr>
+            <tr><td>બ્રજેશ</td><td>90</td><td>50</td><td>90</td><td>60</td><td>70</td><td>80</td></tr>
+            <tr><td>મોહન</td><td>100</td><td>80</td><td>80</td><td>40</td><td>80</td><td>70</td></tr>
+            <tr><td>એલન</td><td>90</td><td>60</td><td>70</td><td>70</td><td>90</td><td>70</td></tr>
+            <tr><td>બોસ્કો</td><td>80</td><td>65</td><td>80</td><td>80</td><td>60</td><td>60</td></tr>
+            <tr><td>દીપક</td><td>80</td><td>65</td><td>85</td><td>95</td><td>50</td><td>90</td></tr>
+            <tr><td>પિયુષ</td><td>70</td><td>75</td><td>65</td><td>85</td><td>40</td><td>60</td></tr>
+        </table>
+        <div class="q-text">ઉપરોક્ત કોષ્ટકના આધારે મોહને કયા વિષયમાં મહત્તમ ગુણ મેળવ્યા છે.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> જનરલ નોલેજ</div>
+            <div class="option"><strong>B.</strong> પર્યાવરણ</div>
+            <div class="option"><strong>C.</strong> હિન્દી</div>
+            <div class="option"><strong>D.</strong> મધ્યયુગીન ઈતિહાસ</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 15</div>
+        <div class="q-text">નીચેના કોષ્ટકનો અભ્યાસ કરો અને પ્રશ્નોના જવાબ આપો. કેટલાક વર્ષોમાં જુદાં જુદાં રાજ્યોમાંથી ગાયન સ્પર્ધામાં ઉપસ્થિત રહેલા અને લાયકાત ધરાવતા ગાયકોની સંખ્યા. App - ઉપસ્થિત. Qual – લાયક</div>
+        <table class="ans-table">
+            <tr>
+                <th>રાજ્ય</th>
+                <th colspan="2">1997</th>
+                <th colspan="2">1998</th>
+                <th colspan="2">1999</th>
+                <th colspan="2">2000</th>
+                <th colspan="2">2001</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td>App.</td><td>Qual.</td>
+                <td>App.</td><td>Qual.</td>
+                <td>App.</td><td>Qual.</td>
+                <td>App.</td><td>Qual.</td>
+                <td>App.</td><td>Qual.</td>
+            </tr>
+            <tr><td>બિહાર</td><td>5200</td><td>720</td><td>8500</td><td>980</td><td>7400</td><td>850</td><td>6800</td><td>775</td><td>9500</td><td>1125</td></tr>
+            <tr><td>ગુજરાત</td><td>7500</td><td>840</td><td>9200</td><td>1050</td><td>8450</td><td>920</td><td>9200</td><td>980</td><td>8800</td><td>1020</td></tr>
+            <tr><td>મહારાષ્ટ્ર</td><td>6400</td><td>780</td><td>8800</td><td>1020</td><td>7800</td><td>890</td><td>8750</td><td>1010</td><td>9750</td><td>1250</td></tr>
+            <tr><td>નાગાલેન્ડ</td><td>8100</td><td>950</td><td>9500</td><td>1240</td><td>8700</td><td>980</td><td>9700</td><td>1200</td><td>8950</td><td>995</td></tr>
+            <tr><td>પંજાબ</td><td>7800</td><td>870</td><td>7600</td><td>940</td><td>9800</td><td>1350</td><td>7600</td><td>945</td><td>7990</td><td>885</td></tr>
+        </table>
+        <div class="q-text">આપેલા વર્ષો દરમિયાન નાગાલેન્ડ રાજ્યમાંથી ઉપસ્થિત રહેલા સરેરાશ ગાયકો કેટલા છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 8550</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 8800</div>
+            <div class="option"><strong>C.</strong> 8990</div>
+            <div class="option"><strong>D.</strong> 8210</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 16</div>
+        <div class="q-text">નીચેના કોષ્ટકનો અભ્યાસ કરો અને પ્રશ્નોના જવાબ આપો. એક પરીક્ષામાં ભાષા અને સંસ્કૃતિના પેપરમાં મળેલા ગુણના આધારે 100 વિદ્યાર્થીઓનું વર્ગીકરણ</div>
+        <table class="ans-table">
+            <tr>
+                <th>વિષય</th>
+                <th>70 અને તેથી વધુ</th>
+                <th>60 અને તેથી વધુ</th>
+                <th>50 અને તેથી વધુ</th>
+                <th>40 અને તેથી વધુ</th>
+                <th>30 અને તેથી વધુ</th>
+            </tr>
+            <tr><td>ભાષા</td><td>9</td><td>32</td><td>80</td><td>92</td><td>0</td></tr>
+            <tr><td>સંસ્કૃતિ</td><td>4</td><td>21</td><td>66</td><td>81</td><td>0</td></tr>
+            <tr><td>સરેરાશ (એકંદર)</td><td>7</td><td>27</td><td>73</td><td>87</td><td>0</td></tr>
+        </table>
+        <div class="q-text">ભાષામાં કટ-ઓફ માર્કસ તરીકે 70 સાથે પાસ થયેલા વિદ્યાર્થીઓની સંખ્યા અને સરેરાશ (એકંદર)માં કટ-ઓફ માર્કસ તરીકે 70 સાથે પાસ થયેલા વિદ્યાર્થીઓની સંખ્યા વચ્ચે શું તફાવત છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 3</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 2</div>
+            <div class="option"><strong>C.</strong> 5</div>
+            <div class="option"><strong>D.</strong> 6</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 17</div>
+        <div class="q-text">નીચેનું કોષ્ટક એક પરીક્ષામાં આઠ વિદ્યાર્થીઓએ છ જુદા જુદા વિષયોમાં મેળવેલા ગુણની ટકાવારી આપે છે. કૌંસમાં આપવામાં આવેલા નંબરો દરેક વિષયમાં મહત્તમ ગુણ આપે છે.</div>
+        <table class="ans-table">
+            <tr>
+                <th>વિદ્યાર્થી</th>
+                <th>બિઝનેસ (100)</th>
+                <th>ફાઈનાન્સ (100)</th>
+                <th>ગણિત (100)</th>
+                <th>મનોવિજ્ઞાન (100)</th>
+                <th>સમાજશાસ્ત્ર (100)</th>
+                <th>હિન્દી (100)</th>
+            </tr>
+            <tr><td>રાશિ</td><td>45</td><td>99</td><td>39</td><td>88</td><td>35</td><td>74</td></tr>
+            <tr><td>ઉમંગ</td><td>70</td><td>49</td><td>89</td><td>49</td><td>88</td><td>86</td></tr>
+            <tr><td>યોગિતા</td><td>99</td><td>80</td><td>60</td><td>65</td><td>50</td><td>90</td></tr>
+            <tr><td>માનવ</td><td>65</td><td>80</td><td>76</td><td>38</td><td>96</td><td>09</td></tr>
+            <tr><td>નીલમ</td><td>80</td><td>78</td><td>99</td><td>45</td><td>49</td><td>83</td></tr>
+            <tr><td>પ્રિયમ</td><td>73</td><td>32</td><td>57</td><td>71</td><td>75</td><td>89</td></tr>
+            <tr><td>રીયા</td><td>95</td><td>95</td><td>40</td><td>87</td><td>99</td><td>94</td></tr>
+            <tr><td>તરુણ</td><td>99</td><td>88</td><td>79</td><td>89</td><td>69</td><td>49</td></tr>
+        </table>
+        <div class="q-text">ઉપરોક્ત કોષ્ટકના આધારે, રાશિએ ઉપરોક્ત ઉલ્લેખિત વિષયોમાંથી કયા વિષયમાં A- મેળવ્યો છે (A- એટલે કે જ્યારે વિદ્યાર્થીને 70 અને 80 ની વચ્ચે/સમાન ગુણ મળે છે)?</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> હિન્દી</div>
+            <div class="option"><strong>B.</strong> ગણિત</div>
+            <div class="option"><strong>C.</strong> મનોવિજ્ઞાન</div>
+            <div class="option"><strong>D.</strong> સમાજશાસ્ત્ર</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 18</div>
+        <div class="q-text">ફક્ત સરવાળા અને ગુણાકારની પ્રક્રિયાનો ઉપયોગ કરીને નીચે આપેલ શ્રેણીને તાર્કિક રીતે પૂર્ણ કરવા માટે પ્રશ્ન ચિહ્ન (?) ના સ્થાને શું આવશે?</div>
+        <div class="q-text">$$2, 4, 8, 10, 20, ??$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 100, 50</div>
+            <div class="option"><strong>B.</strong> 50, 100</div>
+            <div class="option" data-correct="true"><strong>C.</strong> 22, 44</div>
+            <div class="option"><strong>D.</strong> 44, 22</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 19</div>
+        <div class="q-text">નીચે આપેલ શ્રેણીને તાર્કિક રીતે પૂર્ણ કરવા માટે પ્રશ્ન ચિહ્ન (?) ની જગ્યાએ શું આવશે?</div>
+        <div class="q-text">$$50, 53, 50, 59, 50, ?$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 61</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 62</div>
+            <div class="option"><strong>C.</strong> 63</div>
+            <div class="option"><strong>D.</strong> 64</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 20</div>
+        <div class="q-text">માત્ર સરવાળાની પ્રક્રિયાનો ઉપયોગ કરીને નીચે આપેલી શ્રેણીને તાર્કિક રીતે પૂર્ણ કરવા માટે પ્રશ્ન ચિહ્ન (?)ની જગ્યાએ શું આવશે?</div>
+        <div class="q-text">$$5, 21, 37, 53, 69, ?$$</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 84</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 85</div>
+            <div class="option"><strong>C.</strong> 89</div>
+            <div class="option"><strong>D.</strong> 90</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 21</div>
+        <div class="q-text">ફક્ત બાદબાકી અને સરવાળાની પ્રક્રિયાનો ઉપયોગ કરીને નીચે આપેલ શ્રેણીને તાર્કિક રીતે પૂર્ણ કરવા માટે પ્રશ્ન ચિહ્ન (?) ના સ્થાને શું આવશે?</div>
+        <div class="q-text">$$11, 8, 17, 14, 23, ??$$</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 20, 29</div>
+            <div class="option"><strong>B.</strong> 29, 20</div>
+            <div class="option"><strong>C.</strong> 13, 19</div>
+            <div class="option"><strong>D.</strong> 19, 13</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 22</div>
+        <div class="q-text">રવિના (પુરુષ) પિતાના સગા ભાઈના પિતાનો રવિ સાથે શું સંબંધ છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> પિતા</div>
+            <div class="option"><strong>B.</strong> ભાઈ</div>
+            <div class="option"><strong>C.</strong> નાના</div>
+            <div class="option" data-correct="true"><strong>D.</strong> દાદા</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 23</div>
+        <div class="q-text">એક ફોટોગ્રાફ તરફ ઈશારો કરતા નરેન્દ્ર (પુરુષ) કહે છે કે ફોટોગ્રાફમાં દેખાતો માણસ તેના પિતાના સગા ભાઈનો પિતા છે. ફોટોગ્રાફમાં દેખાતો માણસ નરેન્દ્ર સાથે કયો સંબંધ ધરાવે છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> પુત્ર</div>
+            <div class="option"><strong>B.</strong> પિતા</div>
+            <div class="option" data-correct="true"><strong>C.</strong> દાદા</div>
+            <div class="option"><strong>D.</strong> નાના</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 24</div>
+        <div class="q-text">A ના સગા ભાઈ(પુરુષ)ની માતાની એકમાત્ર પુત્રી સાથે A નો શું સંબંધ છે?</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> બહેન</div>
+            <div class="option"><strong>B.</strong> ભાઈ</div>
+            <div class="option"><strong>C.</strong> પિતા</div>
+            <div class="option"><strong>D.</strong> અંકલ (કાકા, પિતાનો ભાઈ)</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 25</div>
+        <div class="q-text">બંસી એ અંજુ કરતા ઉંમરમાં મોટી છે. અનલ એ બંસી કરતા મોટી છે. અર્શી પણ અનલ જેટલી મોટી નથી પણ બંસી કરતા મોટી છે. તેમાંથી સૌથી નાનું કોણ છે?</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> અંજુ</div>
+            <div class="option"><strong>B.</strong> બંસી</div>
+            <div class="option"><strong>C.</strong> અનલ</div>
+            <div class="option"><strong>D.</strong> અર્શી</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 26</div>
+        <div class="q-text">બન્ની એ સંજીવ કરતાં ઉંમરમાં મોટો છે. કુલદીપ એ બન્ની કરતાં ઉંમરમાં મોટો છે. રિષભ પણ કુલદીપ જેટલો મોટો નથી પરંતુ બન્ની કરતા મોટો છે. તેમની વચ્ચે સૌથી મોટું કોણ છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> બન્ની</div>
+            <div class="option"><strong>B.</strong> સંજીવ</div>
+            <div class="option"><strong>C.</strong> રિષભ</div>
+            <div class="option" data-correct="true"><strong>D.</strong> કુલદીપ</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 27</div>
+        <div class="q-text">નીચેના પ્રશ્નમાં 'પ્રશ્ન' અને તેની નીચે 1 અને 2 નંબરમાં દર્શાવેલા બે વિધાનોનો સમાવેશ થાય છે. ઉમેદવારોએ એ નક્કી કરવાનું છે કે વિધાનોમાં આપવામાં આવેલી માહિતી પ્રશ્નનો જવાબ આપવા માટે પર્યાપ્ત છે કે કેમ.</div>
+        <div class="q-text"><strong>પ્રશ્ન:</strong> સાંકેતિક ભાષામાં ‘nor' કેવી રીતે લખાય છે?</div>
+        <div class="q-text"><strong>વિધાનો:</strong><br>1. 'Or nor And' ને '7, 6, 2' લખાયેલ છે.<br>2. 'Nor not either' ને '2, 8, 1' તરીકે લખાયેલ છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> વિધાન 1 એકલું પર્યાપ્ત છે જ્યારે વિધાન 2 એકલું પર્યાપ્ત નથી.</div>
+            <div class="option"><strong>B.</strong> વિધાન 2 એકલું પર્યાપ્ત છે જ્યારે વિધાન 1 એકલું પર્યાપ્ત નથી.</div>
+            <div class="option" data-correct="true"><strong>C.</strong> વિધાન 1 અને વિધાન 2 બંને પર્યાપ્ત છે.</div>
+            <div class="option"><strong>D.</strong> ન તો વિધાન 1 કે ન તો વિધાન 2 પર્યાપ્ત છે.</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 28</div>
+        <div class="q-text">નીચેના પ્રશ્નમાં 'પ્રશ્ન' અને તેની નીચે 1 અને 2 નંબરમાં દર્શાવેલા બે વિધાનોનો સમાવેશ થાય છે. ઉમેદવારોએ એ નક્કી કરવાનું છે કે વિધાનોમાં આપવામાં આવેલી માહિતી પ્રશ્નનો જવાબ આપવા માટે પર્યાપ્ત છે કે કેમ.</div>
+        <div class="q-text"><strong>પ્રશ્ન:</strong> પાંચ બાળકો પારુલ, કાજલ, રોમી, શીલુ અને ટીટુની એક હરોળમાં (બધાનું મોં ઉત્તર તરફ છે) વચ્ચે કોણ ઊભું છે?</div>
+        <div class="q-text"><strong>વિધાનો:</strong><br>1. શિલુ ટીટુની તરત જમણે છે.<br>2. ટીટુ શીલુની તરત ડાબી બાજુ છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> વિધાન 1 એકલું પર્યાપ્ત છે જ્યારે વિધાન 2 એકલું પર્યાપ્ત નથી</div>
+            <div class="option"><strong>B.</strong> વિધાન 2 એકલું પર્યાપ્ત છે જ્યારે વિધાન 1 એકલું પર્યાપ્ત નથી</div>
+            <div class="option"><strong>C.</strong> વિધાન 1 અને વિધાન 2 બંને પર્યાપ્ત છે</div>
+            <div class="option" data-correct="true"><strong>D.</strong> ન તો વિધાન 1 કે ન તો વિધાન 2 પર્યાપ્ત છે</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૨૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 29</div>
+        <!-- <div class="q-text">આપેલ વિધાન(ઓ) અને તારણો કાળજીપૂર્વક વાંચો. ધારી લઈએ કે વિધાનોમાં આપવામાં આવેલી માહિતી સાચી છે, ભલે તે સામાન્ય રીતે જાણીતી હકીકતો સાથે ભિન્ન હોય તેવું લાગતું હોય, પછી નક્કી કરો કે આપેલમાંથી કર્યું તારણ તાર્કિક રીતે આપેલા વિધાનોને અનુસરે છે</div>
+        <div class="q-text"><strong>વિધાનો:</strong><br>બધા કાચ બાસ્કેટ છે.<br>બધી બાસ્કેટ પ્લેટ છે.</div>
+        <div class="q-text"><strong>તારણો:</strong><br>1. કેટલીક પ્લેટ બાસ્કેટ છે.<br>2. બધા ગ્લાસ પ્લેટ છે.</div> -->
+         <div class="q-text" style="color:red; font-size: 11pt;">Note: For this question, ambiguity is found in question/answer. Candidate will get full marks for this question if any of the correct options are chosen.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> </div>
+            <div class="option" data-correct="true"><strong>B.</strong> </div>
+            <div class="option" data-correct="true"><strong>C.</strong> </div>
+            <div class="option" data-correct="true"><strong>D.</strong> </div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 30</div>
+        <div class="q-text">નીચેનામાંથી કઈ વેન આકૃતિ કોમ્પ્યુટર, ડાંગર અને દિલ્હી વચ્ચેનો શ્રેષ્ઠ સંબંધ દર્શાવે છે?</div>
+       <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> <img src='image/page35_img1.png'></div>
+            <div class="option" ><strong>B.</strong> <img src='image/page35_img2.png'></div>
+            <div class="option"><strong>C.</strong> <img src='image/page35_img3.png'></div>
+            <div class="option"><strong>D.</strong> <img src='image/page35_img4.png'></div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 31</div>
+        <div class="q-text">નીચેનામાંથી કઈ વેન આકૃતિ વૃક્ષો, આકાશ અને માર્ગ વચ્ચેનો શ્રેષ્ઠ સંબંધ દર્શાવે છે? </div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> <img src='image/page36_img1.png'></div>
+            <div class="option" ><strong>B.</strong> <img src='image/page36_img2.png'></div>
+            <div class="option"><strong>C.</strong> <img src='image/page36_img3.png'></div>
+            <div class="option"><strong>D.</strong> <img src='image/page36_img4.png'></div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 32</div>
+        <div class="q-text">નીચેનામાંથી કઈ વેન આકૃતિ ભોપાલ, મધ્ય પ્રદેશ અને ભારત વચ્ચેનો શ્રેષ્ઠ સંબંધ દર્શાવે છે? </div>
+        <div class="options">
+            <div class="option" ><strong>A.</strong> <img src='image/page37_img1.png'></div>
+            <div class="option" data-correct="true"><strong>B.</strong> <img src='image/page37_img2.png'></div>
+            <div class="option"><strong>C.</strong> <img src='image/page37_img3.png'></div>
+            <div class="option"><strong>D.</strong> <img src='image/page37_img4.png'></div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 33</div>
+        <div class="q-text">જ્યારે અરીસાને AB રેખા પર સમતલ રીતે મૂકવામાં આવે ત્યારે નીચેની જવાબી આકૃતિમાંથી કયું પ્રશ્ન આકૃતિનું પ્રતિબિંબ હશે? <br> <img src='image/page38_img0.png'></div>
+        <div class="options">
+            <div class="option" ><strong>A.</strong>  1</div>
+            <div class="option"><strong>B.</strong>  2</div>
+            <div class="option" data-correct="true" ><strong>C.</strong>  3</div>
+            <div class="option"><strong>D.</strong>  4</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 34</div>
+        <div class="q-text">જ્યારે અરીસાને AB રેખા પર સમક્ષિતિજ મૂકવામાં આવે ત્યારે જવાબી આકૃતિના નીચેના વિકલ્પોમાંથી કયો વિકલ્પ પ્રશ્ન આકૃતિનું પ્રતિબિંબ હશે? <br> <img src='image/page38_img0.png'></div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong>  1</div>
+            <div class="option"><strong>B.</strong>  2</div>
+            <div class="option"><strong>C.</strong>  3</div>
+            <div class="option" ><strong>D.</strong>  4</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 35</div>
+        <div class="q-text">જ્યારે અરીસાને AB રેખા પર લંબ રીતે મૂકવામાં આવે ત્યારે નીચેની જવાબી આકૃતિમાંથી કયું પ્રશ્ન આકૃતિનું પ્રતિબિંબ હશે? <br> <img src='image/page41_img0.png'></div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong>  1</div>
+            <div class="option" ><strong>B.</strong>  2</div>
+            <div class="option"><strong>C.</strong>  3</div>
+            <div class="option"><strong>D.</strong>  4</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 36</div>
+        <div class="q-text">નીચેનામાંથી કઈ જવાબી આકૃતિ એ પ્રશ્ન આકૃતિને જડિત (એમ્બેડ) થશે (રોટેશનની મંજૂરી નથી) ? <br> <img src='image/page42_img0.png'></div> 
+        <div class="options"> 
+            <div class="option" ><strong>A.</strong>  1</div>
+            <div class="option"><strong>B.</strong>  2</div>
+            <div class="option" data-correct="true"><strong>C.</strong>  3</div>
+            <div class="option"><strong>D.</strong>  4</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 37</div>
+        <div class="q-text">નીચે આપેલા 4 વિકલ્પોમાંથી, કયો વિકલ્પ મૂળ છબી X નું જળ પ્રતિબિંબ હશે? (રોટેશનની મંજૂરી નથી) <br> <img src='image/page43_img0.png'></div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong>  1</div>
+            <div class="option"><strong>B.</strong>  2</div>
+            <div class="option"><strong>C.</strong>  3</div>
+            <div class="option"><strong>D.</strong>  4</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 38</div>
+        <div class="q-text">નીચેનામાંથી કઈ જવાબી આકૃતિ નીચે આપેલ પ્રશ્ન આકૃતિમાં પ્રશ્ન ચિહ્નના સ્થાને આવશે? (રોટેશનની મંજૂરી નથી) <br> <img src='image/page44_img0.png'></div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> A</div>
+            <div class="option"><strong>B.</strong> B</div>
+            <div class="option" data-correct="true" ><strong>C.</strong> C</div>
+            <div class="option" ><strong>D.</strong> D</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૩૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 39</div>
+        <div class="q-text">નીચેનામાંથી કઇ જવાબી આકૃતિ નીચે આપેલી પ્રશ્ન આકૃતિમાં જડિત (એમ્બેડ) થશે? (રોટેશનની મંજૂરી નથી). <br> <img src='image/page45_img0.png'></div>
+        <div class="options">
+            <div class="option"><strong>A.</strong>  1</div>
+            <div class="option" data-correct="true"><strong>B.</strong>  2</div>
+            <div class="option"><strong>C.</strong>  3</div>
+            <div class="option" ><strong>D.</strong>  4</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 40</div>
+        <div class="q-text">નીચેનામાંથી કઈ જવાબી આકૃતિ નીચે આપેલ પ્રશ્ન આકૃતિમાં પ્રશ્ન ચિહ્નના સ્થાને આવશે? (રોટેશનની મંજૂરી નથી)<br> <img src='image/page47_img0.png'></div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> A</div>
+            <div class="option" data-correct="true"><strong>B.</strong> B</div>
+            <div class="option"><strong>C.</strong> C</div>
+            <div class="option" ><strong>D.</strong> D</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 41</div>
+        <div class="q-text">$$115\times115-2\times115\times45+45\times45$$ _________ બરાબર છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 1600</div>
+            <div class="option"><strong>B.</strong> 2500</div>
+            <div class="option"><strong>C.</strong> 4600</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 4900</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 42</div>
+        <div class="q-text">નીચેનામાંથી કયું સમીકરણ સાચું છે?</div>
+        <!-- <div class="options"> </div> -->
+            <div class="option"><strong>A.</strong> $$a^{3}-b^{3}=(a+b)(a^{2}-ab-b^{2})$$</div>
+            <div class="option" data-correct="true"><strong>B.</strong> $$a^{3}+b^{3}+c^{3}-3abc=(a+b+c)(a^{2}+b^{2}+c^{2}-ab-bc-ca)$$</div>
+            <div class="option"><strong>C.</strong> $$(a-b)^{3}=a^{3}-b^{3}-3ab(a+b)$$</div>
+            <div class="option"><strong>D.</strong> $$(a+b)^{3}=a^{3}+b^{3}+3ab(a-b)$$</div>
+        
+    </div>
+
+    <!-- પ્રશ્ન ૪૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 43</div>
+        <div class="q-text">એક સમાંતર શ્રેણીમાં, જો $d=-5$, $n=8$, $a_{n}=12$ હોય, તો $a$ છે.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 47</div>
+            <div class="option"><strong>B.</strong> 49</div>
+            <div class="option"><strong>C.</strong> 54</div>
+            <div class="option"><strong>D.</strong> 58</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 44</div>
+        <div class="q-text">436 સુધીની એકી સંખ્યાઓનો સરવાળો છે.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 47,524</div>
+            <div class="option"><strong>B.</strong> 52,314</div>
+            <div class="option"><strong>C.</strong> 54,645</div>
+            <div class="option"><strong>D.</strong> 57,624</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 45</div>
+        <div class="q-text">સમીકરણોની જોડ $4x+2y-2=0$ અને $-12x-6y+6=0$ પાસે છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> અનન્ય ઉકેલ</div>
+            <div class="option"><strong>B.</strong> બરાબર બે ઉકેલો</div>
+            <div class="option" data-correct="true"><strong>C.</strong> અનંત ઘણા ઉકેલો</div>
+            <div class="option"><strong>D.</strong> કોઈ ઉકેલ નથી</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 46</div>
+        <div class="q-text">જો $6x+4y=8$ અને $2x+y=2$ હોય. તો $y$ નું મૂલ્ય શોધો.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 4</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 2</div>
+            <div class="option"><strong>C.</strong> -4</div>
+            <div class="option"><strong>D.</strong> -2</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 47</div>
+        <div class="q-text">P અને Q ની સરેરાશ માસિક આવક ₹ 5400 છે. Q અને Rની સરેરાશ માસિક આવક ₹ 6200 છે અને P અને Rની સરેરાશ માસિક આવક ₹ 6800 છે. તો P ની માસિક આવક છે.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 6000</div>
+            <div class="option"><strong>B.</strong> 6400</div>
+            <div class="option"><strong>C.</strong> 6800</div>
+            <div class="option"><strong>D.</strong> 7000</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 48</div>
+        <div class="q-text">જો 7 અવલોકનોનો સરેરાશ 21 હોય, જ્યારે દરેક અવલોકનમાં ક્રમિક રીતે 'C' ઉમેરવામાં આવે, તો સરેરાશ 28 થાય છે. તો C નું મૂલ્ય છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 6</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 7</div>
+            <div class="option"><strong>C.</strong> 9</div>
+            <div class="option"><strong>D.</strong> 10</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૪૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 49</div>
+        <div class="q-text">બે સંખ્યા A અને B ની સરેરાશ 19 છે, B અને C ની 30 અને C અને A ની સરેરાશ 25 છે. તો A નું મુલ્ય શું છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 20</div>
+            <div class="option"><strong>B.</strong> 19</div>
+            <div class="option"><strong>C.</strong> 15</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 14</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 50</div>
+        <div class="q-text">એક વસ્તુની ચિહ્નિત કિંમત પર 12% ની છૂટ આપ્યા પછી, તે ₹ 308 માં વેચાય છે. તો તેની ચિહ્નિત કિંમત શોધો.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 320</div>
+            <div class="option"><strong>B.</strong> 216</div>
+            <div class="option"><strong>C.</strong> 220</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 350</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 51</div>
+        <div class="q-text">શીતલ 35% ના ડિસ્કાઉન્ટ અથવા 25% અને 10% ના ક્રમિક બે ડિસ્કાઉન્ટ વચ્ચે નક્કી કરી શકી ન હતી, આ બંને ડિસ્કાઉન્ટ ₹ 10000 ની ખરીદી પર આપવામાં આવે છે. તો બંને ડિસ્કાઉન્ટ વચ્ચે કેટલો તફાવત છે?</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 250</div>
+            <div class="option"><strong>B.</strong> 280</div>
+            <div class="option"><strong>C.</strong> 300</div>
+            <div class="option"><strong>D.</strong> 340</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 52</div>
+        <div class="q-text">$(554)^{372}+(554)^{373}$ ના સરવાળામાં એકમ અંક _________ છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 3</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 0</div>
+            <div class="option"><strong>C.</strong> 2</div>
+            <div class="option"><strong>D.</strong> 4</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 53</div>
+        <div class="q-text">નંદિની ઈંટો ખરીદવા ઈંટના ભઠ્ઠામાં ગઈ. ઈંટોનો ભાવ એક હજાર ઈંટ દીઠ ₹3240 હતો. જો તેની પાસે માત્ર ₹25,920 હોય, તો તે કેટલી ઈંટો ખરીદી શકે છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 6500</div>
+            <div class="option"><strong>B.</strong> 7000</div>
+            <div class="option"><strong>C.</strong> 7800</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 8000</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 54</div>
+        <div class="q-text">એક ટાંકીનો $\dfrac{2}{7}$ ભાગ પાણીથી ભરેલો છે. જ્યારે 30 લિટર પાણી બહાર કાઢવામાં આવે છે, ત્યારે તે ખાલી થઈ જાય છે. ટાંકીની ક્ષમતા કેટલી છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 100 લિટર</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 105 લિટર</div>
+            <div class="option"><strong>C.</strong> 114 લિટર</div>
+            <div class="option"><strong>D.</strong> 124 લિટર</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 55</div>
+        <div class="q-text">નીચેના વિકલ્પોમાંથી ગુરુત્તમ વિકલ્પ શોધો.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> $\dfrac{5}{8}$</div>
+            <div class="option"><strong>B.</strong> $\dfrac{8}{11}$</div>
+            <div class="option" data-correct="true"><strong>C.</strong> $\dfrac{42}{56}$</div>
+            <div class="option"><strong>D.</strong> $\dfrac{89}{156}$</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 56</div>
+        <div class="q-text">ક્રમિક ત્રણ એકી પ્રાકૃતિક સંખ્યાઓનો સરવાળો 159 છે. તો પછી સૌથી મોટી સંખ્યા _________ છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 51</div>
+            <div class="option"><strong>B.</strong> 53</div>
+            <div class="option" data-correct="true"><strong>C.</strong> 55</div>
+            <div class="option"><strong>D.</strong> 59</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 57</div>
+        <div class="q-text">ત્રણ સંખ્યાઓ A, B અને C છે. જો A ને 5 જેટલી ઘટાડવામાં આવે અને B ને 5 જેટલી વધારવામાં આવે તો તેમના મૂલ્ય સમાન થશે. જો C ને 9 જેટલી અને B ને 9 જેટલી વધારવામાં આવે તો તેમના મૂલ્ય સમાન હશે. જો A અને C નો સરવાળો 380 છે તો B નું મૂલ્ય શોધો.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 195</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 185</div>
+            <div class="option"><strong>C.</strong> 175</div>
+            <div class="option"><strong>D.</strong> 165</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 58</div>
+        <div class="q-text">જો અહમદ ₹ 2800 માં એક ઘડિયાળ ખરીદે છે અને 16% વેચાણ વેરો ચૂકવે છે. તો ખરીદી પર ખર્ચવામાં આવેલી કુલ રકમ _________</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 5410</div>
+            <div class="option"><strong>B.</strong> 3380</div>
+            <div class="option"><strong>C.</strong> 2456</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 3248</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૫૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 59</div>
+        <div class="q-text">જો x એ z કરતાં 40% વધુ અને y એ z કરતાં 25% વધુ છે, તો x એ y કરતાં કેટલા ટકા વધુ હશે?</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 12%</div>
+            <div class="option"><strong>B.</strong> 16%</div>
+            <div class="option"><strong>C.</strong> 18%</div>
+            <div class="option"><strong>D.</strong> 22%</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 60</div>
+        <div class="q-text">એક વેપારીને તેની પડતર કિંમત પર 28% લાભની અપેક્ષા છે. જો એક અઠવાડિયામાં, તેનું વેચાણ ₹ 896 હોય, તો તેનો નફો કેટલો હતો?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 156</div>
+            <div class="option"><strong>B.</strong> 168</div>
+            <div class="option"><strong>C.</strong> 178</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 196</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 61</div>
+        <div class="q-text">"એક વેપારી ₹ 1200માં લિસ્ટેડ જૂનું કૂલર ખરીદે છે અને તેને 20% અને 10% નું ક્રમિક ડિસ્કાઉન્ટ મળે છે. તે તેના સમારકામ માટે ₹ 400 ખર્ચે છે અને તેને 20% ના નફા પર વેચે છે. તો કુલરની વેચાણ કિંમત શોધો."</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 1516.80</div>
+            <div class="option"><strong>B.</strong> 2214.50</div>
+            <div class="option"><strong>C.</strong> 1080.00</div>
+            <div class="option"><strong>D.</strong> 2930.06</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 62</div>
+        <div class="q-text">ખેતરની લંબાઈ અને પહોળાઈ 9 : 5 ના ગુણોત્તરમાં છે. જો ખેતરની પહોળાઈ 55 મીટર છે, તો તેની લંબાઈ _________ છે.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 85 m</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 99 m</div>
+            <div class="option"><strong>C.</strong> 120 m</div>
+            <div class="option"><strong>D.</strong> 72 m</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 63</div>
+        <div class="q-text">એક કાર 4 કલાકમાં 184 km અને 3 કલાકમાં 174 km ની મુસાફરી કરે છે. પહેલી ટ્રીપમાં કારની ઝડપ અને બીજી ટ્રીપમાં તેની ઝડપનો ગુણોત્તર કેટલો છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 11:13</div>
+            <div class="option"><strong>B.</strong> 13:11</div>
+            <div class="option"><strong>C.</strong> 23:11</div>
+            <div class="option" data-correct="true"><strong>D.</strong> 23:29</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 64</div>
+        <div class="q-text">બે સંખ્યાઓ 2:5 ના ગુણોત્તરમાં છે. જો તેમનો ગુ.સા.અ. (H.C. F.) 31 છે, તો તે સંખ્યાઓ _________ છે.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 62, 155</div>
+            <div class="option"><strong>B.</strong> 20, 100</div>
+            <div class="option"><strong>C.</strong> 110, 550</div>
+            <div class="option"><strong>D.</strong> 50, 250</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 65</div>
+        <div class="q-text">A દ્વારા કામના ભાગને સમાપ્ત કરવામાં જે સમય લાગે છે તે B દ્વારા લેવામાં આવેલા સમય કરતાં બમણો અને C દ્વારા લેવાયેલા સમય કરતાં ત્રણ ગણો છે. જો તે ત્રણેય એકસાથે કામ કરે, તો તેમને સમગ્ર કાર્ય પૂર્ણ કરવામાં 4 દિવસનો સમય લાગે છે. તો એકલો B કેટલા દિવસમાં કામ પૂર્ણ કરી શકે છે?</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 12 દિવસ</div>
+            <div class="option"><strong>B.</strong> 14 દિવસ</div>
+            <div class="option"><strong>C.</strong> 18 દિવસ</div>
+            <div class="option"><strong>D.</strong> 20 દિવસ</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 66</div>
+        <div class="q-text">A એક કામ 15 દિવસમાં અને B તેને 20 દિવસમાં કરી શકે છે. જો તેઓ તેના પર 3 દિવસ સાથે મળીને કામ કરે છે, તો કેટલા ભાગનું કામ બાકી છે?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> $7/10$</div>
+            <div class="option"><strong>B.</strong> $7/20$</div>
+            <div class="option" data-correct="true"><strong>C.</strong> $13/20$</div>
+            <div class="option"><strong>D.</strong> $13/10$</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 67</div>
+        <div class="q-text">સિટી A અને સિટી B વચ્ચેનું અંતર 2475 કિલોમીટર છે. જો કોઈ ટ્રેન 55 કલાકમાં આ અંતર કાપે છે, તો આ બે શહેરોના રેલવે સ્ટેશનો વચ્ચેની ટ્રેનની સરેરાશ ઝડપ _________ છે.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 45 km/hr.</div>
+            <div class="option"><strong>B.</strong> 30 km/hr</div>
+            <div class="option"><strong>C.</strong> 80 km/hr.</div>
+            <div class="option"><strong>D.</strong> 65 km/hr</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 68</div>
+        <div class="q-text">540 km ની એક ફ્લાઇટમાં, ખરાબ હવામાનના લીધે વિમાનની ઝડપને ઘટાડવામાં આવે છે. આ મુસાફરી માટે તેની સરેરાશ ઝડપ 180 km/hr જેટલી ઘટાડવામાં આવી હતી અને ફ્લાઇટના સમયમાં 30 મિનિટનો વધારો થયો હતો. તો ફ્લાઇટનો મૂળ સમયગાળો _________ છે:</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 1 કલાક</div>
+            <div class="option"><strong>B.</strong> 1.5 કલાક</div>
+            <div class="option"><strong>C.</strong> 2 કલાક</div>
+            <div class="option"><strong>D.</strong> 2.5 કલાક</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૬૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 69</div>
+        <div class="q-text">એક માણસ 74 મિનિટમાં A થી B સુધી 35 km/hr ની ઝડપે મુસાફરી કરે છે અને તે B થી C સુધીનું અંતર 111 મિનિટમાં 45 km/hr ની ઝડપે કાપે છે. સમગ્ર પ્રવાસની સરેરાશ ઝડપ શોધો.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> 37 km/h</div>
+            <div class="option" data-correct="true"><strong>B.</strong> 41 km/h</div>
+            <div class="option"><strong>C.</strong> 45 km/h</div>
+            <div class="option"><strong>D.</strong> 48 km/h</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 70</div>
+        <div class="q-text">એક હોડી સ્થિર પાણીમાં 12 km/hr. ની ઝડપે મુસાફરી કરી શકે છે. જો પ્રવાહની ઝડપ 8 km/hr. હોય, તો હોડી દ્વારા પ્રવાહની દિશામાં 60 km જવા માટે લાગેલો સમય શોધો.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> 3 કલાક</div>
+            <div class="option"><strong>B.</strong> 5 કલાક</div>
+            <div class="option"><strong>C.</strong> 6 કલાક</div>
+            <div class="option"><strong>D.</strong> 9 કલાક</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 71</div>
+        <div class="q-text">Select the most appropriate article from the options given blow to complete the sentence. Mark "No article" if there is no requirement of article in the given sentence.<br><br>My mother cooks _________ best South Indian food in Society.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> a</div>
+            <div class="option"><strong>B.</strong> No article</div>
+            <div class="option"><strong>C.</strong> an</div>
+            <div class="option" data-correct="true"><strong>D.</strong> the</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 72</div>
+        <div class="q-text">Select the most appropriate preposition from the given options to fill in the blanks for the given sentence.<br><br>He is not a difficult man to work _________</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> from</div>
+            <div class="option" data-correct="true"><strong>B.</strong> with</div>
+            <div class="option"><strong>C.</strong> at</div>
+            <div class="option"><strong>D.</strong> off</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 73</div>
+        <div class="q-text">Select the most appropriate preposition from the given options to fill in the blanks for the given sentence.<br><br>You can obtain the answer _________ adding the date of birth to this figure.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> in</div>
+            <div class="option"><strong>B.</strong> at</div>
+            <div class="option" data-correct="true"><strong>C.</strong> by</div>
+            <div class="option"><strong>D.</strong> on</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 74</div>
+        <div class="q-text">Select the most appropriate past tense form of the verb from the given options to fill in the blanks in the given sentence.<br><br>John's father _________ the gate when we went to their house.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> was painting</div>
+            <div class="option"><strong>B.</strong> will be painting</div>
+            <div class="option"><strong>C.</strong> is painting</div>
+            <div class="option"><strong>D.</strong> paints</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 75</div>
+        <div class="q-text">Choose the most logical order of the words from among the four given choices to construct a coherent sentence.<br><br>A) in the world, and its forest stretches<br>B) line of the Andes in the west<br>C) Amazonia is the largest river basin<br>D) from the Atlantic Ocean in the east to the tree</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> DBAC</div>
+            <div class="option" data-correct="true"><strong>B.</strong> CADB</div>
+            <div class="option"><strong>C.</strong> ABCD</div>
+            <div class="option"><strong>D.</strong> DCAB</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 76</div>
+        <div class="q-text">Choose the most logical order of the words from among the four given choices to construct a coherent sentence.</div>
+        <div class="q-text">A) across larger geographic areas and<br>B) the extinction risk of at least 1,660 animal species worldwide<br>C) longer seasons, scientists estimate they now contribute to<br>D) as wildfires burn more frequently and intensely,</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> DCAB</div>
+            <div class="option"><strong>B.</strong> ADCB</div>
+            <div class="option"><strong>C.</strong> BCDA</div>
+            <div class="option" data-correct="true"><strong>D.</strong> DACB</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 77</div>
+        <div class="q-text">Out of the four alternatives, choose the one which can be substituted for the given word.</div>
+        <div class="q-text">A person who is unable to pay his debts</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> Affluent</div>
+            <div class="option"><strong>B.</strong> Opulent</div>
+            <div class="option" data-correct="true"><strong>C.</strong> Insolvent</div>
+            <div class="option"><strong>D.</strong> Tycoon</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 78</div>
+        <div class="q-text">Which one of the alternatives substitutes the given sentence.</div>
+        <div class="q-text">A family of young animals</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> Caravan</div>
+            <div class="option" data-correct="true"><strong>B.</strong> Brood</div>
+            <div class="option"><strong>C.</strong> Herd</div>
+            <div class="option"><strong>D.</strong> Nomad</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૭૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 79</div>
+        <div class="q-text">Translate the following sentence into Gujarati:<br>How many times a day do you eat?</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> તમારે દિવસમાં કેટલી વાર જમવું જોઈએ?</div>
+            <div class="option" data-correct="true"><strong>B.</strong> તમે દિવસમાં કેટલી વાર જમો છો?</div>
+            <div class="option"><strong>C.</strong> તમે દિવસમાં કેટલી વાર જમવું છે?</div>
+            <div class="option"><strong>D.</strong> તમે દિવસમાં કેટલી વાર જમ્યા છો?</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 80</div>
+        <div class="q-text">Select the most appropriate SYNONYM of the word given below.<br>Agile</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> Awkward</div>
+            <div class="option" data-correct="true"><strong>B.</strong> Graceful</div>
+            <div class="option"><strong>C.</strong> Clumsy</div>
+            <div class="option"><strong>D.</strong> Rigid</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 81</div>
+        <div class="q-text">Select the most appropriate SYNONYM of the word given below.<br>Suspicious</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> Sure</div>
+            <div class="option" data-correct="true"><strong>B.</strong> Doubtful</div>
+            <div class="option"><strong>C.</strong> Undeniable</div>
+            <div class="option"><strong>D.</strong> Certain</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 82</div>
+        <div class="q-text">Read the passage given below and answer the questions.<br><br>Animals, plants, and their habitats are preserved and protected through wildlife conservation. Like forests, wildlife is a national resource that contributes to ecological balance and is also valuable from an economic, recreational, and aesthetic standpoint. There was a time when there was no human intervention, there were a lot of wild animals, and there was no issue with protecting or conserving them.<br>However, as agriculture, settlement, industry, and other developmental activities increased, as well as largely because of human greed, the number of wild animals rapidly decreased. As a result, several animal species have already gone extinct, and a number more are in danger of doing so. The need for wildlife conservation results from how human beings are altering lifestyles and advancing ways of living. The massive clearing of trees and forests is causing the habitats of wildlife to be destroyed. The mass extinction of wildlife species is the result of human beings' careless actions. Wild animals and plants crucially maintain the ecological balance. They must be considered necessary. The threat to wildlife comes from a variety of sources. Significant factors contributing to the decline of animals include rising pollution, climatic changes, resource overuse, irregular hunting and poaching, habitat degradation, etc. The government has created and modified many laws and regulations aimed at protecting animals.<br>As we know, deforestation is a huge problem when we speak of wildlife conservation. Trees and forests are home to numerous animals and birds. Thus, we need to plant more trees and stop cutting them as well. My school has recently decided to plant trees near our school area, which is empty. This might be a small initiative, but we need to have more afforestation so that it can have a significant impact and help us conserve wildlife.</div>
+        <div class="q-text">Identify the most suitable title for the passage.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> Need For Wildlife Conservation</div>
+            <div class="option"><strong>B.</strong> Need For deforestation</div>
+            <div class="option"><strong>C.</strong> Need For afforestration</div>
+            <div class="option"><strong>D.</strong> Need For human beings to alter lifestyles</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 83</div>
+        <div class="q-text">Select the most appropriate SYNONYM of the word given below.<br>Rapidly</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> Slowly</div>
+            <div class="option"><strong>B.</strong> Leisurely</div>
+            <div class="option"><strong>C.</strong> Sluggishly</div>
+            <div class="option" data-correct="true"><strong>D.</strong> Swiftly</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 84</div>
+        <div class="q-text">Select the most appropriate SYNONYM of the word given below.<br>Significant</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> Slight</div>
+            <div class="option"><strong>B.</strong> Negligible</div>
+            <div class="option" data-correct="true"><strong>C.</strong> Substantial</div>
+            <div class="option"><strong>D.</strong> Trivial</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 85</div>
+        <div class="q-text">Select the most appropriate ANTONYM of the word given below.<br>Extinction</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> Annihilation</div>
+            <div class="option"><strong>B.</strong> Demolition</div>
+            <div class="option" data-correct="true"><strong>C.</strong> Preservation</div>
+            <div class="option"><strong>D.</strong> Disappearance</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 86</div>
+        <div class="q-text">'તોટો' શબ્દનો વિરુદ્ધાર્થી શબ્દ શોધો</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> વચન</div>
+            <div class="option"><strong>B.</strong> પવન</div>
+            <div class="option"><strong>C.</strong> દગો</div>
+            <div class="option" data-correct="true"><strong>D.</strong> નફો</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 87</div>
+        <div class="q-text">‘હું મારી નિષ્ઠા આપું છું’ નું કર્મણિ વિધાન શોધો</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> મારાથી નિષ્ઠા અપાય છે</div>
+            <div class="option"><strong>B.</strong> મારાથી નિષ્ઠા અપાય નહીં</div>
+            <div class="option"><strong>C.</strong> મારાથી નિષ્ઠા પણ અપાય છે</div>
+            <div class="option"><strong>D.</strong> મારાથી નિષ્ઠા કેમ અપાય?</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 88</div>
+        <div class="q-text">નીચેનામાંથી સાચી જોડણીવાળો શબ્દ શોધો</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> કોહીનુર</div>
+            <div class="option" data-correct="true"><strong>B.</strong> કોહિનૂર</div>
+            <div class="option"><strong>C.</strong> કોહિનુર</div>
+            <div class="option"><strong>D.</strong> કોહીનૂર</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૮૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 89</div>
+        <!-- <div class="q-text">'આઠદસ’ સમાસનો સાચો વિગ્રહ શોધો</div> -->
+        <div class="q-text" style="color:red; font-size: 11pt;">Note: For this question, ambiguity is found in question/answer. Candidate will get full marks for this question if any of the correct options are chosen.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> </div>
+            <div class="option" data-correct="true"><strong>B.</strong> </div>
+            <div class="option" data-correct="true"><strong>C.</strong> </div>
+            <div class="option" data-correct="true"><strong>D.</strong> </div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 90</div>
+        <div class="q-text">‘ભાઈબહેન' શબ્દનો સમાસ ઓળખાવો</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> દ્વંદ્વ</div>
+            <div class="option"><strong>B.</strong> ઉપપદ</div>
+            <div class="option"><strong>C.</strong> મધ્યમપદલોપી</div>
+            <div class="option"><strong>D.</strong> દ્વિગુ</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૧ -->
+    <div class="question-card">
+        <div class="q-num">Que: 91</div>
+        <div class="q-text">‘કૂવો પૂરવો’ રૂઢિપ્રયોગનો અર્થ શોધો</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> પાપ કરવું</div>
+            <div class="option" data-correct="true"><strong>B.</strong> કૂવામાં પડી આત્મહત્યા કરવી</div>
+            <div class="option"><strong>C.</strong> પરોપકાર કરવો</div>
+            <div class="option"><strong>D.</strong> અવાજ કરવો</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૨ -->
+    <div class="question-card">
+        <div class="q-num">Que: 92</div>
+        <div class="q-text">કહેવતનો અર્થ શોધો<br>બે ઘરનો પરોણો ભૂખે મરે</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> બે સગાને ત્યાં ન જવું</div>
+            <div class="option"><strong>B.</strong> બે પરોણાનો માર લાગે</div>
+            <div class="option" data-correct="true"><strong>C.</strong> અનિશ્ચિતતા દુ:ખ આપે</div>
+            <div class="option"><strong>D.</strong> બે મિત્રોને ત્યાં ન જમવું</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૩ -->
+    <div class="question-card">
+        <div class="q-num">Que: 93</div>
+        <div class="q-text">સાચું સંધિ જોડાણ શોધો<br>દ્વારકા + ઈશ</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> દ્વારકેશ</div>
+            <div class="option"><strong>B.</strong> દ્વારિકાધીશ</div>
+            <div class="option"><strong>C.</strong> દ્વારીકિશ</div>
+            <div class="option"><strong>D.</strong> દ્વારિકાઈશ્વર</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૪ -->
+    <div class="question-card">
+        <div class="q-num">Que: 94</div>
+        <div class="q-text">‘પ્રત્યક્ષ’ શબ્દનો સાચો સંધિ વિગ્રહ શોધો.</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> પ્રત્યે + ક</div>
+            <div class="option"><strong>B.</strong> પ્ર + તીઅર્ક</div>
+            <div class="option"><strong>C.</strong> ૫ + ત્યેક</div>
+            <div class="option" data-correct="true"><strong>D.</strong> પ્રતિ + અક્ષ</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૫ -->
+    <div class="question-card">
+        <div class="q-num">Que: 95</div>
+        <div class="q-text">'કેતુ + ઉદય' શબ્દનું સાચું સંધિ જોડાણ શોધો</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> કેતૂદય</div>
+            <div class="option"><strong>B.</strong> કેતઓય</div>
+            <div class="option"><strong>C.</strong> કેતુદય</div>
+            <div class="option"><strong>D.</strong> કએતઉ</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૬ -->
+    <div class="question-card">
+        <div class="q-num">Que: 96</div>
+        <div class="q-text">'ગ્રીવા' શબ્દનો સમાનાર્થી શબ્દ શોધો</div>
+        <div class="options">
+            <div class="option"><strong>A.</strong> નેત્ર</div>
+            <div class="option"><strong>B.</strong> ભ્રમર</div>
+            <div class="option" data-correct="true"><strong>C.</strong> ડોક</div>
+            <div class="option"><strong>D.</strong> ચહેરો</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૭ -->
+    <div class="question-card">
+        <div class="q-num">Que: 97</div>
+        <div class="q-text">‘વહાણનો મુખ્ય ખલાસી' શબ્દસમૂહ માટે એક શબ્દ શોધો</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> ટંડેલ</div>
+            <div class="option"><strong>B.</strong> માલમ</div>
+            <div class="option"><strong>C.</strong> જહાજી</div>
+            <div class="option"><strong>D.</strong> નાવિક</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૮ -->
+    <div class="question-card">
+        <div class="q-num">Que: 98</div>
+        <!-- <div class="q-text">Truth became my sole objective.<br>ગુજરાતી અનુવાદ શોધો</div> -->
+        <div class="q-text" style="color:red; font-size: 11pt;">Note: For this question, ambiguity is found in question/answer. Candidate will get full marks for this question if any of the correct options are chosen.</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> </div>
+            <div class="option" data-correct="true"><strong>B.</strong> </div>
+            <div class="option" data-correct="true"><strong>C.</strong> </div>
+            <div class="option" data-correct="true"><strong>D.</strong> </div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૯૯ -->
+    <div class="question-card">
+        <div class="q-num">Que: 99</div>
+        <div class="q-text">‘નર્મદા નદીને કાકા સાહેબ કાલેલકરે ઉભ્યાન્વયી કહી છે, અન્વય કરનારી નદી કહીને તેનું બહુમાન કર્યું છે.’ વાક્યમાં ‘ઉભય’ શબ્દનો અર્થ શોધો</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> બંને</div>
+            <div class="option"><strong>B.</strong> એક જ</div>
+            <div class="option"><strong>C.</strong> એક પણ નહીં</div>
+            <div class="option"><strong>D.</strong> બધું જ</div>
+        </div>
+    </div>
+
+    <!-- પ્રશ્ન ૧૦૦ -->
+    <div class="question-card">
+        <div class="q-num">Que: 100</div>
+        <div class="q-text">વાક્યનો સાચો અંગ્રેજી અનુવાદ કરો :<br>આ બનાવ પછી હું વધારે અધીરો બન્યો</div>
+        <div class="options">
+            <div class="option" data-correct="true"><strong>A.</strong> The incident, however, made me more anxious than ever to sail.</div>
+            <div class="option"><strong>B.</strong> made me more anxious than ever to sail</div>
+            <div class="option"><strong>C.</strong> The incident, however, made me more</div>
+            <div class="option"><strong>D.</strong> The incident, however, made me more restless and painful all the time</div>
+        </div>
+    </div>
+        
+    </div>
+    
+    <!-- JavaScript Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- UI ELEMENTS ---
+            const startScreen = document.getElementById('start-screen');
+            const topBar = document.getElementById('top-bar');
+            const quizContainer = document.getElementById('quiz-container');
+            const btnStartExam = document.getElementById('btn-start-exam');
+
+            // --- SCOREBOARD LOGIC ---
+            let score = 0;
+            const questionCards = document.querySelectorAll('.question-card');
+            
+            // Count only valid questions (those with a correct answer mapped)
+            const validQuestions = Array.from(questionCards).filter(card => card.querySelector('.option[data-correct="true"]'));
+            document.getElementById('total-questions').innerText = validQuestions.length;
+
+            questionCards.forEach(card => {
+                const options = card.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        if (card.classList.contains('answered') || isPaused) return; // Prevent answering if paused
+                        
+                        const correctOption = card.querySelector('.option[data-correct="true"]');
+                        if (!correctOption) return;
+
+                        card.classList.add('answered');
+                        const isCorrect = this.getAttribute('data-correct') === 'true';
+
+                        if (isCorrect) {
+                            this.classList.add('correct');
+                            score++;
+                            document.getElementById('current-score').innerText = score;
+                        } else {
+                            this.classList.add('wrong');
+                            correctOption.classList.add('correct');
+                        }
+                    });
+                });
+            });
+
+            // --- TIMER LOGIC (120 Minutes) ---
+            let totalSeconds = 120 * 60; // 120 minutes
+            let timerInterval = null;
+            let isPaused = false;
+            
+            const timeDisplay = document.getElementById('time-display');
+            const btnPauseResume = document.getElementById('btn-pause-resume');
+            const btnRestart = document.getElementById('btn-restart');
+
+            function formatTime(seconds) {
+                let m = Math.floor(seconds / 60);
+                let s = seconds % 60;
+                return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+            }
+
+            function updateTimerDisplay() {
+                timeDisplay.innerText = formatTime(totalSeconds);
+            }
+
+            function startTimer() {
+                if (!timerInterval) {
+                    timerInterval = setInterval(() => {
+                        if (totalSeconds > 0) {
+                            totalSeconds--;
+                            updateTimerDisplay();
+                        } else {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            alert("Time is up! Please submit your test.");
+                        }
+                    }, 1000);
+                }
+            }
+
+            function togglePauseResume() {
+                if (isPaused) {
+                    // Resume
+                    startTimer();
+                    isPaused = false;
+                    btnPauseResume.innerText = "Pause";
+                    btnPauseResume.style.backgroundColor = "#f39c12"; // Orange
+                    quizContainer.style.opacity = "1"; // Show questions normally
+                    quizContainer.style.pointerEvents = "auto";
+                } else {
+                    // Pause
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isPaused = true;
+                    btnPauseResume.innerText = "Resume";
+                    btnPauseResume.style.backgroundColor = "#27ae60"; // Green
+                    quizContainer.style.opacity = "0.2"; // Blur out questions while paused
+                    quizContainer.style.pointerEvents = "none";
+                }
+            }
+
+            function restartTimer() {
+                if(confirm("Are you sure you want to restart the timer and clear your score?")) {
+                    // Reset Timer
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    totalSeconds = 120 * 60;
+                    isPaused = false;
+                    btnPauseResume.innerText = "Pause";
+                    btnPauseResume.style.backgroundColor = "#f39c12";
+                    quizContainer.style.opacity = "1";
+                    quizContainer.style.pointerEvents = "auto";
+                    updateTimerDisplay();
+                    startTimer();
+
+                    // Reset Score and Questions
+                    score = 0;
+                    document.getElementById('current-score').innerText = score;
+                    questionCards.forEach(card => {
+                        card.classList.remove('answered');
+                        const options = card.querySelectorAll('.option');
+                        options.forEach(opt => {
+                            opt.classList.remove('correct', 'wrong');
+                        });
+                    });
+                    
+                    // Scroll to top
+                    window.scrollTo(0, 0);
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            
+            // Start Button Logic
+            btnStartExam.addEventListener('click', () => {
+                startScreen.style.display = 'none';
+                topBar.style.display = 'flex';
+                quizContainer.style.display = 'block';
+                updateTimerDisplay();
+                startTimer();
+            });
+
+            btnPauseResume.addEventListener('click', togglePauseResume);
+            btnRestart.addEventListener('click', restartTimer);
+        });
+    </script>
+
+        <!-- JavaScript Logic for Click, Reveal, Score, and Timer -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- SCOREBOARD LOGIC ---
+            let score = 0;
+            const questionCards = document.querySelectorAll('.question-card');
+            
+            const validQuestions = Array.from(questionCards).filter(card => card.querySelector('.option[data-correct="true"]'));
+            document.getElementById('total-questions').innerText = validQuestions.length;
+
+            questionCards.forEach(card => {
+                const options = card.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        if (card.classList.contains('answered')) return;
+                        
+                        const correctOption = card.querySelector('.option[data-correct="true"]');
+                        if (!correctOption) return;
+
+                        card.classList.add('answered');
+                        const isCorrect = this.getAttribute('data-correct') === 'true';
+
+                        if (isCorrect) {
+                            this.classList.add('correct');
+                            score++;
+                            document.getElementById('current-score').innerText = score;
+                        } else {
+                            this.classList.add('wrong');
+                            correctOption.classList.add('correct');
+                        }
+                    });
+                });
+            });
+
+            // --- TIMER LOGIC (120 Minutes) ---
+            let totalSeconds = 120 * 60; // 120 minutes
+            let timerInterval = null;
+            let isPaused = false;
+            
+            const timeDisplay = document.getElementById('time-display');
+            const btnPauseResume = document.getElementById('btn-pause-resume');
+            const btnRestart = document.getElementById('btn-restart');
+
+            function formatTime(seconds) {
+                let m = Math.floor(seconds / 60);
+                let s = seconds % 60;
+                return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+            }
+
+            function updateTimerDisplay() {
+                timeDisplay.innerText = formatTime(totalSeconds);
+            }
+
+            function startTimer() {
+                if (!timerInterval) {
+                    timerInterval = setInterval(() => {
+                        if (totalSeconds > 0) {
+                            totalSeconds--;
+                            updateTimerDisplay();
+                        } else {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            alert("Time is up! Please submit your test.");
+                        }
+                    }, 1000);
+                }
+            }
+
+            function togglePauseResume() {
+                if (isPaused) {
+                    // Resume
+                    startTimer();
+                    isPaused = false;
+                    btnPauseResume.innerText = "Pause";
+                    btnPauseResume.style.backgroundColor = "#f39c12"; // Orange
+                } else {
+                    // Pause
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isPaused = true;
+                    btnPauseResume.innerText = "Resume";
+                    btnPauseResume.style.backgroundColor = "#27ae60"; // Green
+                }
+            }
+
+            function restartTimer() {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                totalSeconds = 120 * 60;
+                isPaused = false;
+                
+                btnPauseResume.innerText = "Pause";
+                btnPauseResume.style.backgroundColor = "#f39c12";
+                
+                updateTimerDisplay();
+                startTimer();
+            }
+
+            // Attach Event Listeners to Buttons
+            btnPauseResume.addEventListener('click', togglePauseResume);
+            btnRestart.addEventListener('click', restartTimer);
+
+            // Automatically start the timer when the page loads
+            updateTimerDisplay();
+            startTimer();
+        });
+    </script>
+</body>
+</html>
